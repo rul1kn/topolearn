@@ -1,0 +1,1308 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TopoLearn: Topologi Jaringan Interaktif</title>
+    <!-- Memuat Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary': '#10b981', // emerald-500
+                        'secondary': '#1f2937', // gray-800
+                        'tertiary': '#374151', // gray-700
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .tab-button {
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        .tab-button.active {
+            border-bottom: 3px solid #10b981;
+            color: #10b981;
+            font-weight: 600;
+        }
+        .node {
+            width: 30px;
+            height: 30px;
+            background-color: #2dd4bf; /* Teal-400 */
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: bold;
+            color: #1f2937;
+            position: absolute;
+            box-shadow: 0 0 10px rgba(45, 212, 191, 0.5);
+            cursor: pointer;
+            transition: transform 0.2s;
+            z-index: 20; /* Pastikan node di atas kabel */
+        }
+        .node:hover:not(.failed) {
+            transform: scale(1.1);
+        }
+        .node.failed {
+            background-color: #dc2626 !important; /* Red-600 */
+            color: white;
+            opacity: 0.5;
+            cursor: not-allowed;
+            box-shadow: 0 0 10px rgba(220, 38, 38, 0.8);
+        }
+        .packet {
+            width: 8px;
+            height: 8px;
+            background-color: #fcd34d; /* Amber-300 */
+            border-radius: 50%;
+            position: absolute;
+            transition: all 1s ease-in-out;
+            box-shadow: 0 0 5px #fcd34d;
+            z-index: 30;
+        }
+        .sim-area {
+            position: relative;
+            height: 400px;
+            background-color: #1f2937;
+            border-radius: 0.5rem;
+            overflow: hidden;
+            border: 1px solid #374151;
+        }
+        .wire {
+            position: absolute;
+            background-color: #9ca3af; /* Gray-400 */
+            z-index: 10;
+        }
+        .wire.failed {
+             background-color: #ef4444 !important; /* Red-500 */
+             opacity: 0.3;
+        }
+        .implementation-box {
+            background-color: #2c3541; /* Slightly darker than tertiary */
+            border-left: 4px solid #10b981;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-100 min-h-screen p-4 sm:p-8">
+
+    <!-- Container Utama -->
+    <div class="max-w-4xl mx-auto bg-gray-800 shadow-2xl rounded-xl p-6 sm:p-10">
+
+        <header class="text-center mb-10">
+            <h1 class="text-3xl sm:text-4xl font-extrabold text-primary">TopoLearn 🚀</h1>
+            <p class="text-gray-400 mt-1">Media Pembelajaran Topologi Jaringan Interaktif</p>
+        </header>
+
+        <!-- Navigasi Tab -->
+        <nav class="flex justify-center border-b border-gray-700 mb-8">
+            <div id="tab-intro" class="tab-button active px-4 py-3 text-lg" onclick="showView('intro')">Pengenalan</div>
+            <div id="tab-tips" class="tab-button px-4 py-3 text-lg" onclick="showView('tips')">Tips & Panduan</div>
+            <div id="tab-sim" class="tab-button px-4 py-3 text-lg" onclick="showView('sim')">Simulasi</div>
+            <div id="tab-quiz" class="tab-button px-4 py-3 text-lg" onclick="showView('quiz')">Kuis Interaktif</div>
+        </nav>
+
+        <!-- Konten Utama (Views) -->
+        <main>
+            <!-- 1. Pengenalan Topologi -->
+            <section id="view-intro" class="view">
+                <h2 class="text-2xl font-semibold mb-4 text-white">1. Pengenalan Topologi Jaringan (TopoPedia)</h2>
+                
+                <!-- Dropdown Pemilihan Topologi -->
+                <div class="mb-6">
+                    <label for="topo-select" class="block text-sm font-medium text-gray-400 mb-2">Pilih Topologi:</label>
+                    <select id="topo-select" class="w-full bg-tertiary border border-gray-600 rounded-md p-3 text-white focus:ring-primary focus:border-primary" onchange="loadTopologyDetails(this.value)">
+                        <!-- Opsi akan diisi oleh JS -->
+                    </select>
+                </div>
+                
+                <!-- Detail Topologi & Pro/Con -->
+                <div id="topo-details" class="bg-tertiary p-6 rounded-lg shadow-inner mb-6">
+                    <h3 class="text-xl font-bold mb-3 text-primary">Detail Topologi</h3>
+                    <p class="text-gray-400">Pilih topologi di atas untuk melihat detail lengkapnya.</p>
+                </div>
+
+                <!-- PANDUAN IMPLEMENTASI -->
+                <div id="implementation-guide" class="bg-tertiary p-6 rounded-lg shadow-inner">
+                    <!-- Konten akan dimuat oleh JS -->
+                </div>
+                
+            </section>
+            
+            <!-- 2. Tips & Panduan Pemilihan Topologi Jaringan (DIUBAH) -->
+            <section id="view-tips" class="view hidden">
+                <h2 class="text-2xl font-semibold mb-6 text-white">2. Tips & Panduan Pemilihan Topologi Jaringan</h2>
+                <p class="text-gray-400 mb-6">Memilih topologi yang tepat adalah langkah krusial dalam perancangan jaringan. Pertimbangkan faktor-faktor berikut berdasarkan kebutuhan organisasi Anda.</p>
+                
+                <div class="space-y-4 text-gray-300">
+                    <div class="implementation-box p-4 rounded-lg">
+                        <h3 class="font-semibold text-white text-lg mb-1 flex items-center">
+                            <svg class="w-5 h-5 mr-2 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
+                            1. Skalabilitas (Ukuran Jaringan)
+                        </h3>
+                        <p class="text-sm">Jaringan kecil (kurang dari 10 perangkat) cocok dengan **Bus** atau **Star** sederhana. Jaringan besar yang membutuhkan ekspansi mudah cocok dengan **Star** atau **Tree** karena sifat modularnya.</p>
+                    </div>
+                    <div class="implementation-box p-4 rounded-lg">
+                        <h3 class="font-semibold text-white text-lg mb-1 flex items-center">
+                            <svg class="w-5 h-5 mr-2 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.318 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                            2. Keandalan (Fault Tolerance)
+                        </h3>
+                        <p class="text-sm">Jika jaringan **harus** selalu aktif (mission-critical), pilih **Mesh** (mahal, tetapi paling handal karena redundansi penuh) atau **Ring** dengan fitur *self-healing*. **Star** adalah kompromi yang baik karena isolasi kesalahannya.</p>
+                    </div>
+                    <div class="implementation-box p-4 rounded-lg">
+                        <h3 class="font-semibold text-white text-lg mb-1 flex items-center">
+                            <svg class="w-5 h-5 mr-2 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m0 0l2 2m0-2h4m-4 0v-2m0 0H9m-2 2h4"></path></svg>
+                            3. Biaya Implementasi
+                        </h3>
+                        <p class="text-sm">Paling murah: **Bus** (membutuhkan sedikit kabel). Paling mahal: **Mesh** (membutuhkan kabel yang sangat banyak). **Star** dan **Tree** berada di tengah, karena membutuhkan perangkat pusat (Hub/Switch) yang menambah biaya.</p>
+                    </div>
+                    <div class="implementation-box p-4 rounded-lg">
+                        <h3 class="font-semibold text-white text-lg mb-1 flex items-center">
+                            <svg class="w-5 h-5 mr-2 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                            4. Kemudahan Perawatan & Diagnosa
+                        </h3>
+                        <p class="text-sm">Paling mudah: **Star** (isolasi kesalahan mudah, cukup cek sambungan ke perangkat pusat). Paling sulit: **Bus** dan **Ring** (kesalahan kabel utama sulit dideteksi dan dapat mematikan seluruh jaringan).</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 3. Simulasi Topologi -->
+            <section id="view-sim" class="view hidden">
+                <h2 class="text-2xl font-semibold mb-4 text-white">3. Simulasi Interaktif (TopoSim)</h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                    <!-- Dropdown Topologi -->
+                    <div class="md:col-span-1">
+                        <label for="sim-topo-select" class="block text-sm font-medium text-gray-400 mb-2">Pilih Topologi:</label>
+                        <select id="sim-topo-select" class="w-full bg-tertiary border border-gray-600 rounded-md p-3 text-white focus:ring-primary focus:border-primary" onchange="setupSimulation(this.value)">
+                            <!-- Opsi akan diisi oleh JS -->
+                        </select>
+                    </div>
+                    <!-- Aksi Kirim Paket -->
+                    <div class="md:col-span-1">
+                        <label class="block text-sm font-medium text-gray-400 mb-2">Aksi Normal:</label>
+                        <button onclick="simulatePacket()" id="simulate-btn" class="w-full bg-primary hover:bg-emerald-600 text-gray-900 font-bold py-3 px-6 rounded-md transition duration-200 disabled:opacity-50" disabled>
+                            Kirim Paket Data 📤
+                        </button>
+                    </div>
+                    <!-- Aksi Simulasi Kegagalan -->
+                     <div class="md:col-span-1">
+                        <label class="block text-sm font-medium text-gray-400 mb-2">Aksi Kegagalan:</label>
+                        <button onclick="toggleFailureMode()" id="failure-mode-btn" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-md transition duration-200">
+                            Simulasi Kegagalan 🚨
+                        </button>
+                    </div>
+                </div>
+
+                <div id="sim-info-bar" class="bg-yellow-800 text-yellow-100 p-3 rounded-lg text-sm mb-4 hidden">
+                    Mode Kegagalan AKTIF. Klik pada **NODE** atau **HUB/BACKBONE** untuk mensimulasikan kerusakan.
+                </div>
+                
+                <div id="sim-container" class="sim-area relative">
+                    <p id="sim-status" class="text-center text-gray-500 pt-20">Pilih topologi untuk memulai simulasi.</p>
+                </div>
+
+                <div id="sim-controls" class="mt-4 bg-tertiary p-4 rounded-lg hidden">
+                    <p class="text-gray-300">Klik dua node (Sumber dan Tujuan) pada simulasi untuk menguji jalur paket data.</p>
+                    <p id="current-selection" class="mt-2 text-sm text-yellow-400"></p>
+                </div>
+
+                <!-- Bagian Kelebihan/Kekurangan di Simulasi -->
+                <div id="sim-pros-cons" class="mt-6">
+                    <!-- Konten detail topologi akan dimuat di sini -->
+                </div>
+            </section>
+
+            <!-- 4. Kuis Interaktif -->
+            <section id="view-quiz" class="view hidden">
+                <h2 class="text-2xl font-semibold mb-4 text-white">4. Kuis Interaktif (TopoQuiz)</h2>
+                
+                <div id="quiz-area" class="bg-tertiary p-6 rounded-lg shadow-inner">
+                    <div id="quiz-welcome">
+                        <p class="text-lg mb-4">Uji pemahaman Anda tentang topologi jaringan! Jawab 5 pertanyaan untuk mendapatkan skor.</p>
+                        <button onclick="startQuiz()" class="bg-primary hover:bg-emerald-600 text-gray-900 font-bold py-3 px-6 rounded-md transition duration-200">
+                            Mulai Kuis Sekarang!
+                        </button>
+                    </div>
+
+                    <div id="quiz-question-container" class="hidden">
+                        <p id="question-text" class="text-xl font-medium mb-5"></p>
+                        <div id="options-container" class="space-y-3">
+                            <!-- Opsi akan diisi oleh JS -->
+                        </div>
+                        <button onclick="submitAnswer()" id="submit-btn" class="mt-6 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md transition duration-200 disabled:opacity-50">
+                            Jawab
+                        </button>
+                        <p id="feedback" class="mt-4 font-semibold"></p>
+                    </div>
+
+                    <div id="quiz-result-container" class="hidden text-center">
+                        <h3 class="text-2xl font-bold mb-4 text-primary">Hasil Kuis Anda</h3>
+                        <p class="text-4xl font-extrabold mb-4" id="final-score"></p>
+                        <p id="result-message" class="text-lg mb-6"></p>
+                        <button onclick="startQuiz()" class="bg-primary hover:bg-emerald-600 text-gray-900 font-bold py-3 px-6 rounded-md transition duration-200">
+                            Coba Lagi
+                        </button>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+    </div>
+
+    <script>
+        // --- DATA APLIKASI ---
+        const TOPOLOGIES = {
+            'Star': {
+                name: 'Topologi Star (Bintang)',
+                def: "Setiap perangkat terhubung ke hub, switch, atau router pusat. Jika satu kabel putus, hanya perangkat tersebut yang terisolasi.",
+                pros: ["Paling Umum & Mudah Dikelola: Pemasangan dan penambahan perangkat baru sangat mudah.", "Isolasi Kesalahan: Kegagalan satu node/kabel tidak memengaruhi node lain.", "Kinerja Konsisten: Kinerja jaringan tetap baik di bawah beban yang wajar."],
+                cons: ["Ketergantungan Pusat: Jika perangkat pusat gagal, seluruh jaringan down.", "Membutuhkan Banyak Kabel: Membutuhkan lebih banyak kabel dibandingkan topologi Bus."],
+                implementation: {
+                    hardware: "Hub atau Switch (wajib), Kabel UTP/STP, Konektor RJ-45, Kartu Jaringan (NIC).",
+                    steps: [
+                        "Pilih Hub/Switch sebagai pusat dan tempatkan di lokasi sentral.",
+                        "Hubungkan setiap PC atau perangkat ke port yang berbeda pada perangkat pusat menggunakan kabel UTP.",
+                        "Lakukan konfigurasi IP Address pada setiap PC.",
+                        "Jika menggunakan Switch, jaringan akan lebih efisien karena Switch hanya mengirim data ke port tujuan (tidak seperti Hub yang melakukan Broadcast)."
+                    ]
+                },
+                nodes: 5,
+                center: true,
+                sim: 'star'
+            },
+            'Bus': {
+                name: 'Topologi Bus',
+                def: "Semua perangkat terhubung ke satu kabel tunggal (backbone) yang berakhir di kedua ujungnya dengan terminator.",
+                pros: ["Sederhana & Murah: Membutuhkan sedikit kabel dan mudah dipasang.", "Cocok untuk Jaringan Kecil: Efisien untuk jaringan dengan jumlah perangkat terbatas."],
+                cons: ["Titik Kegagalan Tunggal: Jika kabel utama (backbone) putus, seluruh jaringan down.", "Kesulitan Diagnosa: Sulit mendeteksi lokasi masalah (kerusakan kabel atau node).", "Kinerja menurun seiring penambahan node."],
+                implementation: {
+                    hardware: "Kabel Coaxial (seperti RG-58), Konektor T-BNC, Terminator.",
+                    steps: [
+                        "Pasang kabel backbone utama di sepanjang jalur yang diinginkan.",
+                        "Gunakan Konektor T-BNC untuk menghubungkan Kartu Jaringan (NIC) setiap PC ke kabel backbone.",
+                        "Pasang Terminator pada kedua ujung kabel backbone untuk mencegah sinyal memantul (bounce).",
+                        "Konfigurasi ini rawan *collision* karena semua perangkat berbagi medium yang sama."
+                    ]
+                },
+                nodes: 4,
+                center: false,
+                sim: 'bus'
+            },
+            'Ring': {
+                name: 'Topologi Ring (Cincin)',
+                def: "Setiap perangkat terhubung ke dua perangkat lain, membentuk jalur melingkar. Data mengalir dalam satu arah (unidirection).",
+                pros: ["Kinerja Stabil: Mencegah tabrakan data (collision).", "Tidak Membutuhkan Server Pusat: Semua perangkat memiliki peran yang setara.", "Membutuhkan sedikit manajemen server."],
+                cons: ["Sensitif terhadap Gangguan: Kegagalan satu node dapat memutuskan seluruh ring.", "Sulit Dimodifikasi: Penambahan/pengurangan node mengganggu jaringan.", "Deteksi kesalahan sulit."],
+                implementation: {
+                    hardware: "Kabel UTP/Serat Optik, MSAU (Multi-Station Access Unit) atau perangkat Token Ring.",
+                    steps: [
+                        "Hubungkan NIC dari PC pertama ke NIC PC kedua, PC kedua ke PC ketiga, dan seterusnya, hingga PC terakhir terhubung kembali ke PC pertama.",
+                        "Atau, gunakan MSAU sebagai pusat yang mengelola aliran data token untuk memastikan integritas ring.",
+                        "Pastikan aliran data token berjalan lancar; jika token hilang, jaringan berhenti berfungsi (kecuali dengan teknologi modern seperti FDDI atau SONET)."
+                    ]
+                },
+                nodes: 5,
+                center: false,
+                sim: 'ring'
+            },
+            'Mesh': {
+                name: 'Topologi Mesh (Jala)',
+                def: "Setiap perangkat terhubung ke setiap perangkat lain dalam jaringan (Full Mesh), menciptakan banyak jalur redundan.",
+                pros: ["Redundansi Maksimal: Sangat handal dan toleran terhadap kesalahan.", "Lalu lintas dapat diatur melalui jalur yang berbeda.", "Keamanan Data Tinggi."],
+                cons: ["Sangat Mahal: Membutuhkan kabel yang sangat banyak.", "Kompleksitas Instalasi: Sangat rumit untuk dipasang dan dikonfigurasi.", "Sulit diimplementasikan pada jaringan besar."],
+                implementation: {
+                    hardware: "Kabel UTP/Serat Optik, Kartu Jaringan (NIC) dengan banyak port (atau banyak NIC), Router yang kompleks.",
+                    steps: [
+                        "Hitung jumlah kabel yang dibutuhkan: N * (N-1) / 2 (N = jumlah perangkat).",
+                        "Hubungkan setiap PC atau Router ke semua PC atau Router lainnya secara langsung.",
+                        "Konfigurasi protokol routing yang kompleks pada setiap perangkat untuk menemukan jalur tercepat/terpendek (misalnya, OSPF atau EIGRP).",
+                        "Biasanya digunakan untuk menghubungkan jaringan-jaringan besar (Router) bukan PC klien."
+                    ]
+                },
+                nodes: 4,
+                center: false,
+                sim: 'mesh'
+            },
+            'Tree': { // Topologi Baru
+                name: 'Topologi Tree (Pohon)',
+                def: "Topologi Tree adalah topologi hibrida yang menggabungkan elemen Topologi Star dan Topologi Bus. Node-node Star dihubungkan secara hierarkis ke kabel Bus pusat.",
+                pros: ["Terukur (Scalability): Memungkinkan jaringan diperluas dengan mudah dengan menambahkan segmen Star.", "Manajemen Terpusat: Pengelolaan dapat dilakukan secara terpusat dari simpul utama."],
+                cons: ["Mahal: Membutuhkan kabel yang banyak dan hub atau switch untuk setiap segmen Star.", "Titik Kegagalan Tulang Punggung: Jika kabel Bus utama gagal, segmen-segmen di bawahnya akan terputus dari jaringan utama."],
+                implementation: {
+                    hardware: "Kabel UTP/STP, Hub/Switch (minimal 2), dan kadang-kadang Kabel Coaxial untuk Backbone.",
+                    steps: [
+                        "Tentukan Backbone (Bus) utama untuk menghubungkan segmen Star.",
+                        "Gunakan Hub/Switch (Pusat Segmen) untuk membuat setiap segmen Star (misalnya, satu untuk lantai 1, satu untuk lantai 2).",
+                        "Hubungkan Switch-Switch segmen tersebut ke Backbone utama (secara Bus atau Star tingkat yang lebih tinggi).",
+                        "Topologi ini ideal untuk organisasi bertingkat atau departemen yang berbeda, di mana setiap kelompok memiliki Hub/Switch sendiri."
+                    ]
+                },
+                nodes: 6, // 2 Hubs (0 & 3), 4 PCs (1, 2, 4, 5). Total 6 node (PC+Hub) yang dapat diklik
+                center: false, // Memiliki struktur bus di pusatnya
+                sim: 'tree'
+            }
+        };
+
+        const QUIZ_QUESTIONS = [
+            {
+                q: "Topologi jaringan manakah yang paling rentan jika perangkat pusat (Hub/Switch) mengalami kerusakan?",
+                options: ["Bus", "Ring", "Star", "Mesh"],
+                answer: "Star"
+            },
+            {
+                q: "Apa kelemahan utama dari Topologi Bus?",
+                options: ["Membutuhkan terlalu banyak kabel", "Jika kabel backbone putus, seluruh jaringan mati", "Terlalu mahal untuk diterapkan", "Sangat lambat"],
+                answer: "Jika kabel backbone putus, seluruh jaringan mati"
+            },
+            {
+                q: "Topologi manakah yang merupakan kombinasi dari Topologi Star dan Topologi Bus?",
+                options: ["Mesh", "Hybrid", "Tree", "Ring"],
+                answer: "Tree"
+            },
+            {
+                q: "Topologi manakah yang menawarkan redundansi tertinggi karena setiap perangkat terhubung ke setiap perangkat lain?",
+                options: ["Ring", "Star", "Mesh", "Tree"],
+                answer: "Mesh"
+            },
+            {
+                q: "Dalam Topologi Ring, bagaimana biasanya paket data mengalir?",
+                options: ["Ke segala arah secara bersamaan (Broadcast)", "Hanya ke perangkat pusat", "Dalam satu arah (Unidirection)", "Hanya dari server ke klien"],
+                answer: "Dalam satu arah (Unidirection)"
+            },
+        ];
+
+        // --- STATE MANAGEMENT ---
+        let currentView = 'intro';
+        let currentQuizIndex = 0;
+        let score = 0;
+        let selectedSourceNode = null;
+        let selectedDestNode = null;
+        let currentTopology = 'Star'; // Default
+        let failureModeActive = false;
+        let failedNodes = []; // Node IDs yang gagal (PC 1, PC 2, etc.)
+        let failedCenter = false; // Hub/Switch gagal (untuk Star)
+        let failedBus = false; // Kabel Backbone gagal (untuk Bus dan Tree)
+
+        // --- FUNGSI UTILITY UI ---
+
+        /** Menampilkan view yang dipilih dan menyembunyikan yang lain */
+        function showView(viewId) {
+            currentView = viewId;
+            document.querySelectorAll('.view').forEach(el => el.classList.add('hidden'));
+            document.getElementById(`view-${viewId}`).classList.remove('hidden');
+
+            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`tab-${viewId}`).classList.add('active');
+
+            // Khusus untuk simulasi, pastikan selalu diatur ulang
+            if (viewId === 'sim') {
+                setupSimulation(document.getElementById('sim-topo-select').value);
+            }
+        }
+
+        /** Memuat konten Kelebihan dan Kekurangan Topologi ke dalam SIMULASI */
+        function loadSimProsCons(topoName) {
+            const data = TOPOLOGIES[topoName];
+            if (!data) return;
+
+            const detailsDiv = document.getElementById('sim-pros-cons');
+            detailsDiv.innerHTML = `
+                <h3 class="text-xl font-bold mb-3 text-white border-b border-gray-700 pb-2">Analisis Topologi ${data.name}</h3>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <!-- Kelebihan -->
+                    <div class="p-3 bg-gray-700 rounded-lg">
+                        <h4 class="font-semibold text-teal-400 mb-2 flex items-center">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            Kelebihan
+                        </h4>
+                        <ul class="list-disc list-inside text-gray-300">
+                            ${data.pros.map(p => `<li>${p}</li>`).join('')}
+                        </ul>
+                    </div>
+
+                    <!-- Kekurangan -->
+                    <div class="p-3 bg-gray-700 rounded-lg">
+                        <h4 class="font-semibold text-red-400 mb-2 flex items-center">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            Kekurangan
+                        </h4>
+                        <ul class="list-disc list-inside text-gray-300">
+                            ${data.cons.map(c => `<li>${c}</li>`).join('')}
+                        </ul>
+                    </div>
+                </div>
+            `;
+        }
+        
+        /** Menghasilkan panduan implementasi untuk topologi yang dipilih */
+        function generateImplementationGuide(topoName) {
+            const data = TOPOLOGIES[topoName];
+            const guideDiv = document.getElementById('implementation-guide');
+            
+            if (!data || !data.implementation) {
+                guideDiv.innerHTML = `<h3 class="text-xl font-bold mb-3 text-red-400">Implementasi Tidak Tersedia</h3><p class="text-gray-400">Data implementasi untuk topologi ini tidak ditemukan.</p>`;
+                return;
+            }
+
+            guideDiv.innerHTML = `
+                <h3 class="text-xl font-bold mb-3 text-yellow-400 border-b border-gray-700 pb-2 flex items-center">
+                    <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.568.355 1.25.5 1.948.331z"></path></svg>
+                    Cara Implementasi Topologi ${data.name}
+                </h3>
+                
+                <div class="space-y-4">
+                    <div class="implementation-box p-4 rounded-lg">
+                        <p class="font-semibold text-white">Perangkat Keras Utama:</p>
+                        <p class="text-sm text-gray-300">${data.implementation.hardware}</p>
+                    </div>
+                    
+                    <div class="implementation-box p-4 rounded-lg">
+                        <p class="font-semibold text-white">Langkah-Langkah Praktis:</p>
+                        <ol class="list-decimal list-inside text-sm text-gray-300 ml-4 space-y-1">
+                            ${data.implementation.steps.map(step => `<li>${step}</li>`).join('')}
+                        </ol>
+                    </div>
+                </div>
+            `;
+        }
+
+        // --- MODUL 1: PENGENALAN (TopoPedia) ---
+
+        /** Mengisi dropdown dan memuat detail topologi default (di tab Intro) */
+        function initIntroduction() {
+            const select = document.getElementById('topo-select');
+            Object.keys(TOPOLOGIES).forEach(topo => {
+                const option = document.createElement('option');
+                option.value = topo;
+                option.textContent = TOPOLOGIES[topo].name;
+                select.appendChild(option);
+            });
+            loadTopologyDetails(select.value);
+        }
+
+        /** Memuat detail topologi ke div topo-details (di tab Intro) */
+        function loadTopologyDetails(topoName) {
+            currentTopology = topoName;
+            const data = TOPOLOGIES[topoName];
+            if (!data) return;
+
+            const detailsDiv = document.getElementById('topo-details');
+            detailsDiv.innerHTML = `
+                <h3 class="text-xl font-bold mb-3 text-primary">${data.name}</h3>
+                <p class="text-gray-300 mb-4">${data.def}</p>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <!-- Kelebihan -->
+                    <div class="p-3 bg-gray-700 rounded-lg">
+                        <h4 class="font-semibold text-teal-400 mb-2 flex items-center">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            Kelebihan
+                        </h4>
+                        <ul class="list-disc list-inside text-gray-300">
+                            ${data.pros.map(p => `<li>${p}</li>`).join('')}
+                        </ul>
+                    </div>
+
+                    <!-- Kekurangan -->
+                    <div class="p-3 bg-gray-700 rounded-lg">
+                        <h4 class="font-semibold text-red-400 mb-2 flex items-center">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            Kekurangan
+                        </h4>
+                        <ul class="list-disc list-inside text-gray-300">
+                            ${data.cons.map(c => `<li>${c}</li>`).join('')}
+                        </ul>
+                    </div>
+                </div>
+            `;
+            generateImplementationGuide(topoName);
+        }
+
+        // --- MODUL 2: SIMULASI (TopoSim) ---
+
+        /** Mengisi dropdown simulasi dan menyiapkan default */
+        function initSimulation() {
+            const select = document.getElementById('sim-topo-select');
+            Object.keys(TOPOLOGIES).forEach(topo => {
+                const option = document.createElement('option');
+                option.value = topo;
+                option.textContent = TOPOLOGIES[topo].name;
+                select.appendChild(option);
+            });
+            setupSimulation(select.value);
+        }
+
+        /** Menyiapkan area simulasi berdasarkan topologi yang dipilih */
+        function setupSimulation(topoName) {
+            currentTopology = topoName;
+            const container = document.getElementById('sim-container');
+            const data = TOPOLOGIES[topoName];
+            const nodesCount = data.nodes;
+            
+            // Atur ulang status kegagalan setiap kali topologi diubah
+            failedNodes = []; 
+            failedCenter = false;
+            failedBus = false;
+            failureModeActive = false;
+            document.getElementById('failure-mode-btn').classList.remove('bg-gray-400', 'hover:bg-gray-500');
+            document.getElementById('failure-mode-btn').classList.add('bg-red-600', 'hover:bg-red-700');
+            document.getElementById('sim-info-bar').classList.add('hidden');
+            
+            container.innerHTML = ''; // Membersihkan semua konten simulasi
+            
+            document.getElementById('sim-controls').classList.remove('hidden');
+
+            selectedSourceNode = null;
+            selectedDestNode = null;
+            updateSelectionStatus();
+            document.getElementById('simulate-btn').disabled = true;
+
+            const simWidth = container.clientWidth;
+            const simHeight = container.clientHeight;
+
+            // FUNGSI UNTUK MENGAMBIL POSISI NODE/PUSAT
+            const getPos = (index, total, radius) => {
+                const angle = (index / total) * 2 * Math.PI;
+                const x = simWidth / 2 + radius * Math.cos(angle);
+                const y = simHeight / 2 + radius * Math.sin(angle);
+                return { x, y };
+            };
+
+            const nodePositions = [];
+            let centralNodes = []; // Untuk Tree/Star pusat
+            let pcNodes = []; // Untuk PC clients
+
+            // FUNGSI BANTU UNTUK MEMBUAT NODE
+            const createNode = (id, label, x, y, isCenter = false, color = '#2dd4bf') => {
+                const node = document.createElement('div');
+                node.className = 'node';
+                node.style.left = `${x}px`;
+                node.style.top = `${y}px`;
+                node.textContent = label;
+                node.dataset.nodeId = id;
+                node.dataset.isCenter = isCenter ? 'true' : 'false';
+                node.style.backgroundColor = color;
+                
+                // Jika ini adalah Hub/Switch di Star, tambahkan ID khusus
+                if (topoName === 'Star' && isCenter) {
+                    node.id = 'center-node';
+                }
+                
+                // Jika ini adalah Hub di Tree, gunakan ID khusus
+                if (topoName === 'Tree' && isCenter) {
+                    node.id = `center-node-${id}`;
+                }
+
+                node.onclick = () => handleNodeClick(id, node);
+                container.appendChild(node);
+                return { id, x: x + 15, y: y + 15, el: node };
+            };
+
+            // 1. Logika Penempatan Node dan Pengkabelan
+            if (topoName === 'Star') {
+                // Pusat Star
+                const centerNode = createNode(0, 'HUB', simWidth / 2 - 20, simHeight / 2 - 20, true, '#fcd34d');
+                centralNodes.push(centerNode);
+
+                // Node Klien
+                for (let i = 0; i < nodesCount - 1; i++) {
+                    const radius = Math.min(simWidth, simHeight) / 3 - 20;
+                    const pos = getPos(i, nodesCount - 1, radius);
+                    pcNodes.push(createNode(i + 1, `PC ${i + 1}`, pos.x - 15, pos.y - 15));
+                }
+
+                // Pengkabelan
+                pcNodes.forEach(pos => {
+                    drawLine(container, centerNode, pos, 'wire-' + pos.id);
+                });
+
+            } else if (topoName === 'Bus') {
+                const y = simHeight / 2;
+                
+                // Gambar kabel utama (Backbone)
+                drawLine(container, { x: 50, y: y }, { x: simWidth - 50, y: y }, 'bus-backbone', true); 
+
+                // Node Klien
+                for (let i = 0; i < nodesCount; i++) {
+                    const padding = 50;
+                    const x = padding + (i / (nodesCount - 1)) * (simWidth - 2 * padding) - 15;
+                    pcNodes.push(createNode(i + 1, `PC ${i + 1}`, x, y - 45)); // Node di atas kabel
+                }
+            } else if (topoName === 'Ring' || topoName === 'Mesh') {
+                 // Node Klien (Melengkung)
+                for (let i = 0; i < nodesCount; i++) {
+                    const radius = Math.min(simWidth, simHeight) / 3 - 20;
+                    const pos = getPos(i, nodesCount, radius);
+                    pcNodes.push(createNode(i + 1, `PC ${i + 1}`, pos.x - 15, pos.y - 15));
+                }
+                
+                // Pengkabelan
+                if (topoName === 'Ring') {
+                    for (let i = 0; i < nodesCount; i++) {
+                        const currentPos = pcNodes[i];
+                        const nextPos = pcNodes[(i + 1) % nodesCount];
+                        drawLine(container, currentPos, nextPos, `wire-${currentPos.id}-${nextPos.id}`);
+                    }
+                } else { // Mesh
+                     for (let i = 0; i < nodesCount; i++) {
+                        for (let j = i + 1; j < nodesCount; j++) {
+                            drawLine(container, pcNodes[i], pcNodes[j], `wire-${pcNodes[i].id}-${pcNodes[j].id}`);
+                        }
+                    }
+                }
+            } else if (topoName === 'Tree') {
+                const yMid = simHeight / 2;
+                const paddingX = simWidth * 0.15;
+                const xLeft = simWidth * 0.35;
+                const xRight = simWidth * 0.65;
+                
+                // 1. Backbone (Kabel Bus Utama Vertikal) - Ini adalah kabel utama
+                drawLine(container, { x: simWidth / 2, y: 50 }, { x: simWidth / 2, y: simHeight - 50 }, 'bus-backbone', true, true); 
+
+                // 2. Hub/Switch (Pusat Segmen Star) - Terhubung ke Backbone
+                // Hub 1 (kiri)
+                const hub1 = createNode(10, 'HUB A', xLeft - 20, 100 - 20, true, '#fcd34d');
+                centralNodes.push(hub1);
+                drawLine(container, { x: simWidth / 2, y: 100 }, hub1, 'wire-backbone-hub1', false); 
+                
+                // Hub 2 (kanan)
+                const hub2 = createNode(20, 'HUB B', xRight - 20, 300 - 20, true, '#fcd34d');
+                centralNodes.push(hub2);
+                drawLine(container, { x: simWidth / 2, y: 300 }, hub2, 'wire-backbone-hub2', false);
+                
+                // 3. PC Klien (Tersambung ke Hub)
+                
+                // PC di Hub A (Node ID 1 & 2)
+                const pc1 = createNode(1, 'PC 1', xLeft - 60, 200 - 20);
+                const pc2 = createNode(2, 'PC 2', xLeft + 20, 200 - 20);
+                pcNodes.push(pc1, pc2);
+                drawLine(container, hub1, pc1, 'wire-hub1-pc1');
+                drawLine(container, hub1, pc2, 'wire-hub1-pc2');
+
+                // PC di Hub B (Node ID 3 & 4)
+                const pc3 = createNode(3, 'PC 3', xRight - 60, 200 - 20);
+                const pc4 = createNode(4, 'PC 4', xRight + 20, 200 - 20);
+                pcNodes.push(pc3, pc4);
+                drawLine(container, hub2, pc3, 'wire-hub2-pc3');
+                drawLine(container, hub2, pc4, 'wire-hub2-pc4');
+            }
+
+
+            // Gabungkan semua posisi node untuk referensi paket
+            container.dataset.nodePositions = JSON.stringify([...centralNodes, ...pcNodes]);
+            
+            // Muat Kelebihan dan Kekurangan di bawah Simulasi
+            loadSimProsCons(topoName);
+        }
+        
+        /** Menggambar kabel antar dua titik */
+        function drawLine(container, p1, p2, id, isBus = false, isVertical = false) {
+            const x1 = p1.x;
+            const y1 = p1.y;
+            const x2 = p2.x;
+            const y2 = p2.y;
+
+            const length = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
+            let angle = Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI;
+
+            const line = document.createElement('div');
+            line.id = id;
+            line.className = 'wire';
+            line.style.width = `${length}px`;
+            
+            let lineWidth = 2; // Default wire thickness
+            let yOffset = -1;
+            
+            // Jika kabel Bus atau Backbone Tree
+            if (isBus) {
+                lineWidth = 8;
+                yOffset = -4; 
+                line.className += ' !bg-gray-600 rounded-full';
+            }
+            
+            if (isVertical) {
+                // Untuk Bus Vertikal (Tree Backbone)
+                line.style.width = '8px';
+                line.style.height = `${Math.abs(y2 - y1)}px`;
+                line.style.left = `${x1 - 4}px`;
+                line.style.top = `${Math.min(y1, y2)}px`;
+                line.style.transform = `rotate(0deg)`;
+                line.className += ' !bg-gray-600 rounded-full';
+                return container.appendChild(line);
+            }
+            
+            line.style.height = `${lineWidth}px`;
+            line.style.left = `${x1}px`;
+            line.style.top = `${y1 + yOffset}px`;
+            line.style.transform = `rotate(${angle}deg)`;
+            line.style.transformOrigin = '0 0';
+
+
+            container.appendChild(line);
+        }
+
+        // --- FUNGSI KEGAGALAN JARINGAN ---
+
+        /** Mengaktifkan/menonaktifkan mode kegagalan */
+        function toggleFailureMode() {
+            failureModeActive = !failureModeActive;
+            const btn = document.getElementById('failure-mode-btn');
+            const infoBar = document.getElementById('sim-info-bar');
+            
+            if (failureModeActive) {
+                btn.classList.remove('bg-red-600', 'hover:bg-red-700');
+                btn.classList.add('bg-gray-400', 'hover:bg-gray-500');
+                btn.textContent = 'Mode Normal (Nonaktifkan)';
+                infoBar.classList.remove('hidden');
+                // Nonaktifkan seleksi normal saat mode kegagalan aktif
+                selectedSourceNode = null;
+                selectedDestNode = null;
+                document.getElementById('simulate-btn').disabled = true;
+                updateSelectionStatus();
+                updateNodeStatusDisplay(); // Pastikan warna default saat mode aktif
+            } else {
+                btn.classList.add('bg-red-600', 'hover:bg-red-700');
+                btn.classList.remove('bg-gray-400', 'hover:bg-gray-500');
+                btn.textContent = 'Simulasi Kegagalan 🚨';
+                infoBar.classList.add('hidden');
+                // Reset warna visual
+                document.querySelectorAll('.node').forEach(n => {
+                    if (!n.classList.contains('failed')) {
+                        n.style.backgroundColor = n.dataset.isCenter === 'true' ? '#fcd34d' : '#2dd4bf';
+                    }
+                });
+            }
+        }
+
+        /** Handler untuk klik node, memisahkan antara mode normal dan kegagalan */
+        function handleNodeClick(nodeId, nodeElement) {
+            // Jika Node Pusat (HUB/Switch)
+            const isCenterNode = nodeElement.dataset.isCenter === 'true';
+
+            if (failureModeActive) {
+                if (currentTopology === 'Star' && isCenterNode) {
+                    // Kegagalan HUB/Switch di Star (Node ID 0)
+                    failedCenter = !failedCenter;
+                    nodeElement.classList.toggle('failed', failedCenter);
+                    
+                    const message = failedCenter ? "Kegagalan Total! Seluruh komunikasi terhenti." : "Pusat Pulih! HUB/Switch telah diperbaiki.";
+                    const color = failedCenter ? 'red' : 'primary';
+                    alertMessage(failedCenter ? "HUB Gagal!" : "HUB Pulih!", message, color);
+
+                } else if ((currentTopology === 'Bus' || currentTopology === 'Tree') && nodeElement.id === 'bus-backbone-trigger') {
+                    // Kegagalan Kabel Backbone di Bus/Tree
+                    failedBus = !failedBus;
+                    document.getElementById('bus-backbone').classList.toggle('failed', failedBus);
+                    
+                    const message = failedBus ? "Kabel utama (Backbone) rusak. Seluruh komunikasi terhenti." : "Backbone Pulih! Kabel utama telah diperbaiki.";
+                    const color = failedBus ? 'red' : 'primary';
+                    alertMessage(failedBus ? "Backbone Gagal!" : "Backbone Pulih!", message, color);
+                    
+                    // Di Topologi Bus, perlu node trigger untuk mengklik kabel backbone
+                    nodeElement.classList.toggle('failed', failedBus); 
+
+                } else if (currentTopology === 'Tree' && isCenterNode) {
+                    // Kegagalan Sub-HUB di Tree (Node ID 10 atau 20)
+                    const index = failedNodes.indexOf(nodeId);
+                    if (index > -1) {
+                        failedNodes.splice(index, 1);
+                        nodeElement.classList.remove('failed');
+                        alertMessage("HUB Pulih!", `HUB ${nodeElement.textContent} telah kembali beroperasi.`, 'primary');
+                    } else {
+                        failedNodes.push(nodeId);
+                        nodeElement.classList.add('failed');
+                        alertMessage("HUB Gagal!", `HUB ${nodeElement.textContent} rusak. Semua PC yang terhubung dengannya terisolasi.`, 'red');
+                    }
+                    
+                } else if (!isCenterNode) {
+                    // Kegagalan Node Klien (PC 1, PC 2, dst)
+                    const index = failedNodes.indexOf(nodeId);
+                    if (index > -1) {
+                        failedNodes.splice(index, 1);
+                        nodeElement.classList.remove('failed');
+                         alertMessage("Node Pulih!", `${nodeElement.textContent} telah kembali beroperasi.`, 'primary');
+                    } else {
+                        failedNodes.push(nodeId);
+                        nodeElement.classList.add('failed');
+                        alertMessage("Node Gagal!", `${nodeElement.textContent} mengalami kerusakan. Tidak bisa mengirim/menerima data.`, 'red');
+                    }
+                }
+
+                // Reset seleksi normal
+                selectedSourceNode = null;
+                selectedDestNode = null;
+                document.getElementById('simulate-btn').disabled = true;
+                updateSelectionStatus();
+                updateNodeStatusDisplay();
+
+            } else {
+                // Mode normal: Seleksi Sumber/Tujuan
+                selectNode(nodeId, nodeElement);
+            }
+        }
+
+        /** Memastikan semua node dan kabel menampilkan status gagal saat ini */
+        function updateNodeStatusDisplay() {
+            // Perbarui Node Klien dan Sub-Hub
+            document.querySelectorAll('.node').forEach(nodeEl => {
+                const nodeId = parseInt(nodeEl.dataset.nodeId);
+                const isCenter = nodeEl.dataset.isCenter === 'true';
+                
+                let isFailed = failedNodes.includes(nodeId);
+                
+                // Tambahan cek untuk node sentral
+                if (currentTopology === 'Star' && isCenter && nodeEl.id === 'center-node') {
+                    isFailed = failedCenter;
+                } else if (currentTopology === 'Tree' && isCenter && (nodeId === 10 || nodeId === 20)) {
+                    isFailed = failedNodes.includes(nodeId);
+                }
+
+                
+                nodeEl.classList.toggle('failed', isFailed);
+                
+                // Atur ulang warna jika tidak gagal dan mode normal (atau mode kegagalan tidak aktif)
+                if (!isFailed && !failureModeActive) { 
+                    nodeEl.style.backgroundColor = isCenter ? '#fcd34d' : '#2dd4bf';
+                }
+            });
+            
+            // Perbarui Kabel Backbone di Bus/Tree
+            const busWireEl = document.getElementById('bus-backbone');
+            if (busWireEl) {
+                busWireEl.classList.toggle('failed', failedBus);
+            }
+        }
+
+
+        /** Memilih node sumber dan tujuan (Mode Normal) */
+        function selectNode(nodeId, nodeElement) {
+            // Cek apakah node gagal
+            if (failedNodes.includes(nodeId) || (currentTopology === 'Star' && nodeId === 0 && failedCenter)) {
+                alertMessage("Gagal!", `Node atau HUB ini sedang rusak dan tidak bisa dipilih.`, 'red');
+                return;
+            }
+            
+            // Jika Backbone Bus atau Tree rusak, tidak bisa simulasi
+            if (failedBus) {
+                alertMessage("Gagal Komunikasi!", `Kabel utama (Backbone) rusak. Simulasi tidak dapat dimulai.`, 'red');
+                return;
+            }
+
+            // Reset warna semua node non-failed
+            document.querySelectorAll('.node:not(.failed)').forEach(n => {
+                n.style.backgroundColor = n.dataset.isCenter === 'true' ? '#fcd34d' : '#2dd4bf'; 
+            });
+
+            // Node yang diklik saat ini
+            if (selectedSourceNode === nodeId) {
+                // Deselect current source
+                selectedSourceNode = null;
+                selectedDestNode = null;
+                nodeElement.style.backgroundColor = nodeElement.dataset.isCenter === 'true' ? '#fcd34d' : '#2dd4bf';
+            } else if (selectedSourceNode === null) {
+                // Select source
+                selectedSourceNode = nodeId;
+                nodeElement.style.backgroundColor = '#fcd34d'; // Yellow for source
+            } else if (selectedDestNode === null && nodeId !== selectedSourceNode) {
+                // Select destination
+                selectedDestNode = nodeId;
+                // Re-color source and dest
+                document.querySelector(`[data-node-id="${selectedSourceNode}"]`).style.backgroundColor = '#fcd34d';
+                document.querySelector(`[data-node-id="${selectedDestNode}"]`).style.backgroundColor = '#ef4444'; // Red for dest
+            } else if (nodeId === selectedDestNode) {
+                // Deselect destination
+                selectedDestNode = null;
+                document.querySelector(`[data-node-id="${selectedSourceNode}"]`).style.backgroundColor = '#fcd34d';
+            } else {
+                // Change destination
+                document.querySelector(`[data-node-id="${selectedDestNode}"]`).style.backgroundColor = 
+                    document.querySelector(`[data-node-id="${selectedDestNode}"]`).dataset.isCenter === 'true' ? '#fcd34d' : '#2dd4bf';
+                selectedDestNode = nodeId;
+                document.querySelector(`[data-node-id="${selectedDestNode}"]`).style.backgroundColor = '#ef4444'; // Red
+            }
+
+            updateSelectionStatus();
+            document.getElementById('simulate-btn').disabled = !(selectedSourceNode && selectedDestNode);
+        }
+
+        /** Memperbarui teks status seleksi node */
+        function updateSelectionStatus() {
+            const statusEl = document.getElementById('current-selection');
+            let statusText = "Pilih Node:";
+            if (selectedSourceNode) {
+                const label = document.querySelector(`[data-node-id="${selectedSourceNode}"]`).textContent;
+                statusText += ` Sumber: ${label} (Kuning)`;
+            }
+            if (selectedDestNode) {
+                const label = document.querySelector(`[data-node-id="${selectedDestNode}"]`).textContent;
+                statusText += `, Tujuan: ${label} (Merah)`;
+            }
+            statusEl.textContent = statusText;
+        }
+        
+        // Fungsi untuk mendapatkan posisi node dari data-nodePositions
+        function getNodePosition(nodeId, nodePositions) {
+             const id = parseInt(nodeId);
+             return nodePositions.find(n => n.id === id);
+        }
+        
+        // Fungsi untuk memeriksa apakah node gagal dalam perjalanan
+        const isNodeFailed = (nodeId) => failedNodes.includes(nodeId);
+
+        /** Fungsi inti untuk simulasi paket */
+        async function simulatePacket() {
+            if (!selectedSourceNode || !selectedDestNode) return;
+            
+            // Periksa Kegagalan Kritis sebelum memulai
+            if ((currentTopology === 'Star' && failedCenter) || (currentTopology === 'Bus' && failedBus)) {
+                alertMessage("Gagal Komunikasi!", "Kegagalan Kritis terdeteksi. Jaringan tidak dapat berfungsi.", 'red');
+                return;
+            }
+            if (isNodeFailed(selectedDestNode)) {
+                 alertMessage("Gagal Sampai!", `Node tujuan (${document.querySelector(`[data-node-id="${selectedDestNode}"]`).textContent}) rusak. Paket tidak akan diterima.`, 'red');
+                 return;
+            }
+
+
+            const container = document.getElementById('sim-container');
+            const nodePositions = JSON.parse(container.dataset.nodePositions);
+            const sourcePos = getNodePosition(selectedSourceNode, nodePositions);
+            const destPos = getNodePosition(selectedDestNode, nodePositions);
+
+            // Helper untuk jeda berbasis janji
+            const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
+            const travelTime = 1000; // 1 detik per segmen
+
+            // Buat paket
+            const packet = document.createElement('div');
+            packet.className = 'packet';
+            packet.style.left = `${sourcePos.x - 4}px`;
+            packet.style.top = `${sourcePos.y - 4}px`;
+            container.appendChild(packet);
+            
+            // Nonaktifkan tombol saat simulasi berjalan
+            document.getElementById('simulate-btn').disabled = true;
+
+            try {
+                // LOGIKA SIMULASI UNTUK SETIAP TOPOLOGI
+                if (currentTopology === 'Star') {
+                    const centerPos = getNodePosition(0, nodePositions); // HUB ID 0
+                    
+                    // 1. Bergerak ke Pusat (Hub)
+                    packet.style.transition = `all ${travelTime}ms linear`;
+                    packet.style.left = `${centerPos.x - 4}px`;
+                    packet.style.top = `${centerPos.y - 4}px`;
+                    await sleep(travelTime + 100);
+
+                    // 2. Bergerak dari Pusat ke Tujuan
+                    packet.style.transition = `all ${travelTime}ms linear`;
+                    packet.style.left = `${destPos.x - 4}px`;
+                    packet.style.top = `${destPos.y - 4}px`;
+                    await sleep(travelTime + 100);
+
+                    alertMessage("Paket Terkirim!", `Topologi Star: Data melalui pusat (HUB/Switch) dan langsung ke tujuan.`, 'primary');
+
+                } else if (currentTopology === 'Bus') {
+                    const cableY = container.clientHeight / 2 - 4;
+                    
+                    // 1. Bergerak ke kiri (simulasi broadcast)
+                    packet.style.transition = `all ${travelTime * 1.5}ms linear`;
+                    packet.style.left = `${50 - 4}px`; 
+                    packet.style.top = `${cableY}px`;
+                    await sleep(travelTime * 1.5 + 100);
+
+                    // 2. Bergerak ke kanan
+                    packet.style.transition = `all ${travelTime * 3}ms linear`;
+                    packet.style.left = `${container.clientWidth - 50 - 4}px`; 
+                    await sleep(travelTime * 3 + 100);
+
+                    alertMessage("Paket Terkirim!", `Topologi Bus: Data di-broadcast (disiarkan) di sepanjang backbone. Tujuan berhasil mengambil.`, 'primary');
+
+                } else if (currentTopology === 'Ring') {
+                    let path = [];
+                    const nodesCount = TOPOLOGIES.Ring.nodes;
+                    const srcIndex = selectedSourceNode - 1;
+                    const destIndex = selectedDestNode - 1;
+                    let pathInterrupted = null;
+                    
+                    // Tentukan jalur (Unidirectional)
+                    for(let i = 0; i < nodesCount; i++) {
+                        const nextIdx = (srcIndex + i + 1) % nodesCount;
+                        const nextId = nextIdx + 1;
+                        const nextPos = getNodePosition(nextId, nodePositions);
+
+                        if (isNodeFailed(nextId) && nextId !== selectedDestNode) { // Jika node perantara gagal
+                            pathInterrupted = nextId;
+                            break; 
+                        }
+                        
+                        path.push(nextPos);
+                        if (nextId === selectedDestNode) break; 
+                        if (i === nodesCount - 1) pathInterrupted = 'Full Circle'; // Loop tanpa mencapai tujuan
+                    }
+
+                    let currentPos = sourcePos;
+                    for (const nextPos of path) {
+                        if (pathInterrupted) break;
+                        
+                        packet.style.transition = `all ${travelTime}ms linear`;
+                        packet.style.left = `${nextPos.x - 4}px`;
+                        packet.style.top = `${nextPos.y - 4}px`;
+                        currentPos = nextPos;
+                        await sleep(travelTime);
+                    }
+                    
+                    if (pathInterrupted) {
+                         alertMessage("Jalur Terputus!", `Gagal: Komunikasi terhenti karena node ${pathInterrupted} yang berada di jalur ring mengalami kerusakan.`, 'red');
+                    } else {
+                        alertMessage("Paket Terkirim!", `Topologi Ring: Data mengalir secara satu arah, berhasil mencapai tujuan.`, 'primary');
+                    }
+
+                } else if (currentTopology === 'Mesh') {
+                     // Koneksi langsung
+                    packet.style.transition = `all ${travelTime}ms linear`;
+                    packet.style.left = `${destPos.x - 4}px`;
+                    packet.style.top = `${destPos.y - 4}px`;
+                    await sleep(travelTime + 150);
+                    
+                    alertMessage("Paket Terkirim!", `Topologi Mesh: Data dikirim langsung ke tujuan melalui jalur khusus.`, 'primary');
+
+                } else if (currentTopology === 'Tree') {
+                    // Logika Tree: PC -> Sub-Hub -> Backbone -> Sub-Hub -> PC
+                    
+                    // Node ID 10 = HUB A (kiri), Node ID 20 = HUB B (kanan)
+                    const hubA = getNodePosition(10, nodePositions);
+                    const hubB = getNodePosition(20, nodePositions);
+                    const backboneX = container.clientWidth / 2;
+                    const backboneY = sourcePos.y; // Y tidak relevan untuk backbone vertikal
+
+                    let sourceHub, destHub;
+                    
+                    // Tentukan HUB Sumber
+                    if ([1, 2].includes(selectedSourceNode)) sourceHub = hubA;
+                    else if ([3, 4].includes(selectedSourceNode)) sourceHub = hubB;
+
+                    // Tentukan HUB Tujuan
+                    if ([1, 2].includes(selectedDestNode)) destHub = hubA;
+                    else if ([3, 4].includes(selectedDestNode)) destHub = hubB;
+                    
+                    // Cek kegagalan HUB
+                    if (isNodeFailed(sourceHub.id) || isNodeFailed(destHub.id)) {
+                        alertMessage("Jalur Gagal!", `HUB di jalur komunikasi ini rusak. Komunikasi tidak dapat dilanjutkan.`, 'red');
+                        throw new Error("HUB Failure");
+                    }
+                    
+                    // 1. PC -> HUB Sumber
+                    packet.style.transition = `all ${travelTime}ms linear`;
+                    packet.style.left = `${sourceHub.x - 4}px`;
+                    packet.style.top = `${sourceHub.y - 4}px`;
+                    await sleep(travelTime + 100);
+
+                    if (sourceHub.id !== destHub.id) {
+                        // 2. HUB Sumber -> Backbone
+                        const sourceBBPoint = { x: backboneX, y: sourceHub.y };
+                        packet.style.transition = `all ${travelTime}ms linear`;
+                        packet.style.left = `${sourceBBPoint.x - 4}px`;
+                        packet.style.top = `${sourceBBPoint.y - 4}px`;
+                        await sleep(travelTime + 100);
+
+                        // 3. Backbone -> HUB Tujuan
+                        const destBBPoint = { x: backboneX, y: destHub.y };
+                        packet.style.transition = `all ${travelTime * Math.abs(destBBPoint.y - sourceBBPoint.y) / 2000 * 2}ms linear`; // Kecepatan tergantung jarak vertikal
+                        packet.style.left = `${destBBPoint.x - 4}px`;
+                        packet.style.top = `${destBBPoint.y - 4}px`;
+                        await sleep(travelTime * Math.abs(destBBPoint.y - sourceBBPoint.y) / 2000 * 2 + 100);
+
+                        // 4. Backbone -> HUB Tujuan (Sambungan)
+                        packet.style.transition = `all ${travelTime}ms linear`;
+                        packet.style.left = `${destHub.x - 4}px`;
+                        packet.style.top = `${destHub.y - 4}px`;
+                        await sleep(travelTime + 100);
+                    }
+                    
+                    // 5. HUB Tujuan -> PC Tujuan
+                    packet.style.transition = `all ${travelTime}ms linear`;
+                    packet.style.left = `${destPos.x - 4}px`;
+                    packet.style.top = `${destPos.y - 4}px`;
+                    await sleep(travelTime + 100);
+
+                    alertMessage("Paket Terkirim!", `Topologi Tree: Data melalui HUB lokal, melewati Backbone vertikal, dan turun ke HUB tujuan, lalu ke PC.`, 'primary');
+                }
+            } catch (error) {
+                // Tangani kegagalan Hub/Backbone
+                if (error.message !== "HUB Failure") {
+                    console.error("Simulasi error:", error);
+                }
+            } finally {
+                packet.remove();
+                document.getElementById('simulate-btn').disabled = false;
+            }
+        }
+
+
+        // --- MODUL 3: KUIS (TopoQuiz) ---
+
+        /** Memulai kuis, mengacak pertanyaan, dan menampilkan pertanyaan pertama */
+        function startQuiz() {
+            currentQuizIndex = 0;
+            score = 0;
+
+            // Mengacak pertanyaan
+            for (let i = QUIZ_QUESTIONS.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [QUIZ_QUESTIONS[i], QUIZ_QUESTIONS[j]] = [QUIZ_QUESTIONS[j], QUIZ_QUESTIONS[i]];
+            }
+
+            document.getElementById('quiz-welcome').classList.add('hidden');
+            document.getElementById('quiz-result-container').classList.add('hidden');
+            document.getElementById('quiz-question-container').classList.remove('hidden');
+            document.getElementById('feedback').textContent = '';
+            
+            showQuestion();
+        }
+
+        /** Menampilkan pertanyaan kuis saat ini */
+        function showQuestion() {
+            if (currentQuizIndex >= 5) { // Hanya 5 pertanyaan yang ditampilkan
+                showResults();
+                return;
+            }
+
+            const questionData = QUIZ_QUESTIONS[currentQuizIndex];
+            document.getElementById('question-text').textContent = `Pertanyaan ${currentQuizIndex + 1}/5: ${questionData.q}`;
+            
+            const optionsContainer = document.getElementById('options-container');
+            optionsContainer.innerHTML = '';
+            document.getElementById('submit-btn').disabled = true;
+            document.getElementById('feedback').textContent = '';
+
+            // Mengacak opsi
+            const shuffledOptions = [...questionData.options];
+            for (let i = shuffledOptions.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffledOptions[i], shuffledOptions[j]] = [shuffledOptions[j], shuffledOptions[i]];
+            }
+            
+            shuffledOptions.forEach(option => {
+                const label = document.createElement('label');
+                label.className = 'flex items-center bg-gray-700 p-3 rounded-lg hover:bg-gray-600 transition cursor-pointer';
+                label.innerHTML = `
+                    <input type="radio" name="quiz-option" value="${option}" class="text-primary focus:ring-primary h-5 w-5 mr-3" onclick="document.getElementById('submit-btn').disabled = false;">
+                    <span class="text-white">${option}</span>
+                `;
+                optionsContainer.appendChild(label);
+            });
+        }
+
+        /** Memproses jawaban dari kuis */
+        function submitAnswer() {
+            const selectedOption = document.querySelector('input[name="quiz-option"]:checked');
+            if (!selectedOption) return;
+
+            const feedbackEl = document.getElementById('feedback');
+            const questionData = QUIZ_QUESTIONS[currentQuizIndex];
+            const isCorrect = selectedOption.value === questionData.answer;
+
+            if (isCorrect) {
+                score++;
+                feedbackEl.className = 'mt-4 font-semibold text-green-400';
+                feedbackEl.textContent = 'Jawaban Benar! Skor bertambah.';
+            } else {
+                feedbackEl.className = 'mt-4 font-semibold text-red-400';
+                feedbackEl.textContent = `Jawaban Salah. Jawaban yang benar adalah: ${questionData.answer}.`;
+            }
+
+            // Menonaktifkan opsi setelah dijawab
+            document.querySelectorAll('input[name="quiz-option"]').forEach(input => input.disabled = true);
+            document.getElementById('submit-btn').disabled = true;
+
+            // Lanjut ke pertanyaan berikutnya setelah jeda singkat
+            setTimeout(() => {
+                currentQuizIndex++;
+                showQuestion();
+            }, 1500);
+        }
+
+        /** Menampilkan hasil akhir kuis */
+        function showResults() {
+            document.getElementById('quiz-question-container').classList.add('hidden');
+            const resultContainer = document.getElementById('quiz-result-container');
+            resultContainer.classList.remove('hidden');
+
+            const finalScoreEl = document.getElementById('final-score');
+            const messageEl = document.getElementById('result-message');
+            finalScoreEl.textContent = `${score} / 5`;
+
+            let message = '';
+            if (score === 5) {
+                message = 'Luar Biasa! Anda menguasai semua konsep Topologi Jaringan.';
+                finalScoreEl.classList.add('text-green-400');
+            } else if (score >= 3) {
+                message = 'Bagus! Anda memiliki pemahaman yang baik, pelajari lagi beberapa poin.';
+                finalScoreEl.classList.add('text-yellow-400');
+            } else {
+                message = 'Terus semangat! Kembali ke modul Pengenalan dan Simulasi untuk meningkatkan pemahaman Anda.';
+                finalScoreEl.classList.add('text-red-400');
+            }
+            messageEl.textContent = message;
+        }
+
+
+        // --- FUNGSI PESAN (Pengganti Alert) ---
+        /** Menampilkan pesan notifikasi kustom */
+        function alertMessage(title, message, color) {
+            const container = document.getElementById('sim-container');
+            
+            // Hapus pesan lama
+            const oldBox = document.getElementById('message-box');
+            if(oldBox) oldBox.remove();
+            
+            // Buat elemen message box
+            const messageBox = document.createElement('div');
+            messageBox.id = 'message-box';
+            
+            // Atur warna latar belakang yang sesuai
+            let bgColorClass = 'bg-primary-600 text-gray-900';
+            if (color === 'red') {
+                bgColorClass = 'bg-red-600 text-white';
+            } else if (color === 'primary') {
+                 bgColorClass = 'bg-primary text-gray-900';
+            }
+            
+            messageBox.className = `absolute top-4 left-1/2 transform -translate-x-1/2 p-4 rounded-lg shadow-xl text-center z-50 transition-opacity duration-300 ${bgColorClass}`;
+            messageBox.innerHTML = `
+                <p class="font-bold text-lg">${title}</p>
+                <p class="text-sm">${message}</p>
+            `;
+            
+            container.appendChild(messageBox);
+
+            // Hilangkan setelah 3 detik
+            setTimeout(() => {
+                messageBox.style.opacity = '0';
+                setTimeout(() => messageBox.remove(), 300);
+            }, 3000);
+        }
+
+        // --- INICIALISASI APLIKASI ---
+        window.onload = function() {
+            initIntroduction();
+            initSimulation();
+            // Tampilkan view awal
+            showView('intro');
+        };
+
+    </script>
+</body>
+</html>
