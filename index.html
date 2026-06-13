@@ -225,9 +225,9 @@
         <header class="flex flex-col md:flex-row items-center justify-between border-b border-slate-800 pb-6 mb-6">
             <div class="text-center md:text-left mb-4 md:mb-0">
                 <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-400 bg-clip-text text-transparent flex items-center justify-center md:justify-start gap-3">
-                    TopoLearn <span class="text-xs font-semibold px-2 py-1 bg-emerald-500/20 text-emerald-300 rounded border border-emerald-500/30">V1.5</span>
+                    TopoLearn <span class="text-xs font-semibold px-2 py-1 bg-emerald-500/20 text-emerald-300 rounded border border-emerald-500/30">V1.0</span>
                 </h1>
-                <p class="text-slate-400 text-sm mt-1">Modul Pembelajaran Topologi Jaringan Komputer Interaktif</p>
+                <p class="text-slate-400 text-sm mt-1">Media Pembelajaran Topologi Jaringan Komputer Interaktif</p>
             </div>
             <!-- Identitas Pembuat -->
             <div class="text-center md:text-right text-xs text-slate-400 border border-slate-800 bg-slate-900/60 p-3 rounded-lg backdrop-blur-md">
@@ -237,7 +237,7 @@
             </div>
         </header>
 
-        <!-- Menu Navigasi dengan Ikon Modern -->
+        <!-- Menu Navigasi dengan Ikon Modern (DIREVISI: Urutan Tips dipindah setelah Simulasi) -->
         <nav class="flex border-b border-slate-800 mb-8 overflow-x-auto whitespace-nowrap scrollbar-none gap-2">
             <button id="tab-beranda" class="tab-button active px-4 py-3 text-sm sm:text-base flex items-center gap-2 text-slate-400 hover:text-slate-200" onclick="showView('beranda')">
                 <i class="fa-solid fa-house"></i> Beranda
@@ -245,11 +245,11 @@
             <button id="tab-materi" class="tab-button px-4 py-3 text-sm sm:text-base flex items-center gap-2 text-slate-400 hover:text-slate-200" onclick="showView('materi')">
                 <i class="fa-solid fa-book-open"></i> Materi
             </button>
-            <button id="tab-tips" class="tab-button px-4 py-3 text-sm sm:text-base flex items-center gap-2 text-slate-400 hover:text-slate-200" onclick="showView('tips')">
-                <i class="fa-solid fa-lightbulb"></i> Tips & Panduan
-            </button>
             <button id="tab-sim" class="tab-button px-4 py-3 text-sm sm:text-base flex items-center gap-2 text-slate-400 hover:text-slate-200" onclick="showView('sim')">
                 <i class="fa-solid fa-network-wired"></i> Simulasi
+            </button>
+            <button id="tab-tips" class="tab-button px-4 py-3 text-sm sm:text-base flex items-center gap-2 text-slate-400 hover:text-slate-200" onclick="showView('tips')">
+                <i class="fa-solid fa-lightbulb"></i> Tips
             </button>
             <button id="tab-quiz" class="tab-button px-4 py-3 text-sm sm:text-base flex items-center gap-2 text-slate-400 hover:text-slate-200" onclick="showView('quiz')">
                 <i class="fa-solid fa-gamepad"></i> Kuis Interaktif
@@ -274,10 +274,10 @@
                             <i class="fa-solid fa-bolt"></i> Modul Ajar Digital Interaktif
                         </div>
                         <h2 class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
-                            Tahukah Anda <span class="bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">Topologi Jaringan?</span>
+                            Tahukah Anda <span class="bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">Topologi Jaringan..?</span>
                         </h2>
                         <p class="text-slate-300 leading-relaxed text-sm sm:text-base">
-                            Selamat datang di modul ajar digital **TopoLearn**. Jaringan Komputer merupakan sistem yang menghubungkan dua atau lebih perangkat komputer agar dapat saling berkomunikasi, berbagi data, dan menggunakan sumber daya secara bersamaan. Sementara itu, topologi adalah metode atau tata letak (fisik maupun logis) yang digunakan untuk menghubungkan perangkat-perangkat tersebut di dalam suatu jaringan. Jaringan komputer adalah pembuluh darah digital yang menopang dunia internet saat ini. Di sini, Anda akan mempelajari bagaimana setiap node (komputer/server) terhubung, berkomunikasi, dan bertukar data melalui visualisasi, simulasi sirkuit interaktif, serta kuis pembelajaran yang seru!
+                            Selamat datang di modul ajar digital **TopoLearn**. Jaringan Komputer merupakan sistem yang menghubungkan dua atau lebih perangkat komputer agar dapat saling berkomunikasi, berbagi data, dan menggunakan sumber daya secara bersamaan. Sementara itu, Topologi Jaringan adalah metode atau tata letak (fisik maupun logis) yang digunakan untuk menghubungkan perangkat-perangkat tersebut di dalam suatu jaringan. Jaringan komputer adalah pembuluh darah digital yang menopang dunia internet saat ini. Di sini, Anda akan mempelajari bagaimana setiap node (komputer/server) terhubung, berkomunikasi, dan bertukar data melalui visualisasi 3D mutakhir, simulasi sirkuit interaktif, serta kuis pembelajaran yang seru!
                         </p>
                         
                         <!-- Panel Detail Studi -->
@@ -348,58 +348,10 @@
                 </div>
             </section>
 
-            <!-- 3. TIPS & PANDUAN VIEW -->
-            <section id="view-tips" class="view hidden">
-                <h2 class="text-2xl font-bold mb-6 text-white flex items-center gap-2">
-                    <i class="fa-solid fa-lightbulb text-emerald-400"></i> Panduan Pemilihan Topologi
-                </h2>
-                <p class="text-slate-400 mb-6">Setiap topologi memiliki kekuatan dan kelemahan spesifik. Berikut adalah panduan komparatif untuk membantu menentukan pilihan arsitektur jaringan terbaik:</p>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    
-                    <div class="implementation-box p-5 rounded-xl bg-slate-900/40 border border-slate-800">
-                        <h3 class="font-bold text-white text-lg mb-2 flex items-center gap-2">
-                            <i class="fa-solid fa-expand text-emerald-400"></i> 1. Skalabilitas
-                        </h3>
-                        <p class="text-sm text-slate-300 leading-relaxed">
-                            Jika jaringan direncanakan berkembang di masa depan, gunakan **Topologi Star** atau **Topologi Tree**. Keduanya mempermudah penambahan perangkat baru tanpa merusak sirkuit aktif yang sedang berjalan.
-                        </p>
-                    </div>
-
-                    <div class="implementation-box p-5 rounded-xl bg-slate-900/40 border border-slate-800">
-                        <h3 class="font-bold text-white text-lg mb-2 flex items-center gap-2">
-                            <i class="fa-solid fa-shield-halved text-emerald-400"></i> 2. Fault Tolerance (Keandalan)
-                        </h3>
-                        <p class="text-sm text-slate-300 leading-relaxed">
-                            Untuk sistem krusial (misi penting) yang tidak boleh mati sedetik pun, gunakan **Topologi Mesh**. Dengan koneksi redundan, matinya satu jalur komunikasi tidak akan menghentikan transfer data antar node.
-                        </p>
-                    </div>
-
-                    <div class="implementation-box p-5 rounded-xl bg-slate-900/40 border border-slate-800">
-                        <h3 class="font-bold text-white text-lg mb-2 flex items-center gap-2">
-                            <i class="fa-solid fa-wallet text-emerald-400"></i> 3. Anggaran & Biaya Kabel
-                        </h3>
-                        <p class="text-sm text-slate-300 leading-relaxed">
-                            Bila anggaran sangat terbatas, **Topologi Bus** adalah opsi termurah untuk sirkuit kecil. Namun untuk skala modern menengah, **Topologi Star** memberikan keseimbangan terbaik antara biaya peralatan sentral (switch) dengan efisiensi jangka panjang.
-                        </p>
-                    </div>
-
-                    <div class="implementation-box p-5 rounded-xl bg-slate-900/40 border border-slate-800">
-                        <h3 class="font-bold text-white text-lg mb-2 flex items-center gap-2">
-                            <i class="fa-solid fa-wrench text-emerald-400"></i> 4. Kemudahan Perawatan
-                        </h3>
-                        <p class="text-sm text-slate-300 leading-relaxed">
-                            **Topologi Star** menempati posisi teratas untuk kemudahan perawatan. Karena setiap node tersambung ke titik pusat, teknisi dapat dengan cepat melacak port mana yang mengalami kegagalan transmisi.
-                        </p>
-                    </div>
-
-                </div>
-            </section>
-
-            <!-- 4. SIMULASI VIEW -->
+            <!-- 3. SIMULASI VIEW -->
             <section id="view-sim" class="view hidden">
                 <h2 class="text-2xl font-bold mb-4 text-white flex items-center gap-2">
-                    <i class="fa-solid fa-network-wired text-emerald-400"></i> Simulasi Interaktif Topologi Jaringan
+                    <i class="fa-solid fa-network-wired text-emerald-400"></i> Simulasi Interaktif Jaringan
                 </h2>
                 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
@@ -448,6 +400,54 @@
 
                 <!-- Container Analisis Kelebihan / Kekurangan Simulasi -->
                 <div id="sim-pros-cons" class="mt-6"></div>
+            </section>
+
+            <!-- 4. TIPS VIEW (DIREVISI: Perubahan nama dan posisi) -->
+            <section id="view-tips" class="view hidden">
+                <h2 class="text-2xl font-bold mb-6 text-white flex items-center gap-2">
+                    <i class="fa-solid fa-lightbulb text-emerald-400"></i> Tips Pemilihan Topologi
+                </h2>
+                <p class="text-slate-400 mb-6">Setiap topologi memiliki kekuatan dan kelemahan spesifik. Berikut adalah panduan komparatif untuk membantu menentukan pilihan arsitektur jaringan terbaik:</p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    
+                    <div class="implementation-box p-5 rounded-xl bg-slate-900/40 border border-slate-800">
+                        <h3 class="font-bold text-white text-lg mb-2 flex items-center gap-2">
+                            <i class="fa-solid fa-expand text-emerald-400"></i> 1. Skalabilitas
+                        </h3>
+                        <p class="text-sm text-slate-300 leading-relaxed">
+                            Jika jaringan direncanakan berkembang di masa depan, gunakan **Topologi Star** atau **Topologi Tree**. Keduanya mempermudah penambahan perangkat baru tanpa merusak sirkuit aktif yang sedang berjalan.
+                        </p>
+                    </div>
+
+                    <div class="implementation-box p-5 rounded-xl bg-slate-900/40 border border-slate-800">
+                        <h3 class="font-bold text-white text-lg mb-2 flex items-center gap-2">
+                            <i class="fa-solid fa-shield-halved text-emerald-400"></i> 2. Fault Tolerance (Keandalan)
+                        </h3>
+                        <p class="text-sm text-slate-300 leading-relaxed">
+                            Untuk sistem krusial (misi penting) yang tidak boleh mati sedetik pun, gunakan **Topologi Mesh**. Dengan sirkuit koneksi redundan, matinya satu jalur komunikasi tidak akan menghentikan transfer data antar node.
+                        </p>
+                    </div>
+
+                    <div class="implementation-box p-5 rounded-xl bg-slate-900/40 border border-slate-800">
+                        <h3 class="font-bold text-white text-lg mb-2 flex items-center gap-2">
+                            <i class="fa-solid fa-wallet text-emerald-400"></i> 3. Anggaran & Biaya Kabel
+                        </h3>
+                        <p class="text-sm text-slate-300 leading-relaxed">
+                            Bila anggaran sangat terbatas, **Topologi Bus** adalah opsi termurah untuk sirkuit kecil. Namun untuk skala modern menengah, **Topologi Star** memberikan keseimbangan terbaik antara biaya peralatan sentral (switch) dengan efisiensi jangka panjang.
+                        </p>
+                    </div>
+
+                    <div class="implementation-box p-5 rounded-xl bg-slate-900/40 border border-slate-800">
+                        <h3 class="font-bold text-white text-lg mb-2 flex items-center gap-2">
+                            <i class="fa-solid fa-wrench text-emerald-400"></i> 4. Kemudahan Perawatan
+                        </h3>
+                        <p class="text-sm text-slate-300 leading-relaxed">
+                            **Topologi Star** menempati posisi teratas untuk kemudahan perawatan. Karena setiap node tersambung ke titik pusat, teknisi dapat dengan cepat melacak port mana yang mengalami kegagalan transmisi.
+                        </p>
+                    </div>
+
+                </div>
             </section>
 
             <!-- 5. KUIS INTERAKTIF VIEW -->
@@ -511,7 +511,7 @@
                 </div>
             </section>
 
-            <!-- 6. EVALUASI VIEW (BARU: 20 SOAL MULTIPLE CHOICE DENGAN PEMBAHASAN & RESET) -->
+            <!-- 6. EVALUASI VIEW -->
             <section id="view-eval" class="view hidden">
                 <div class="flex items-center justify-between mb-6">
                     <h2 class="text-2xl font-bold text-white flex items-center gap-2">
@@ -571,7 +571,7 @@
                             Coba Ulangi Evaluasi <i class="fa-solid fa-rotate-right ml-1"></i>
                         </button>
 
-                        <!-- Box Panel Review Pembahasan (BARU) -->
+                        <!-- Box Panel Review Pembahasan -->
                         <div class="text-left bg-slate-950 p-4 rounded-xl border border-slate-800">
                             <h4 class="text-lg font-bold text-yellow-400 border-b border-slate-800 pb-2 mb-4 flex items-center gap-2">
                                 <i class="fa-solid fa-circle-info"></i> Tinjau & Pembahasan Soal
@@ -587,7 +587,7 @@
             <!-- 7. REFERENSI VIEW -->
             <section id="view-ref" class="view hidden">
                 <h2 class="text-2xl font-bold mb-4 text-white flex items-center gap-2">
-                    <i class="fa-solid fa-bookmark text-emerald-400"></i> Referensi
+                    <i class="fa-solid fa-bookmark text-emerald-400"></i> Referensi & Sumber Rujukan
                 </h2>
                 <p class="text-slate-400 mb-6">Sumber kepustakaan, materi, dan tautan edukatif yang digunakan dalam penyusunan Modul Ajar Digital Topologi Jaringan Komputer ini:</p>
                 
@@ -660,7 +660,6 @@
 
     <script>
         // --- DATA UTAMA APLIKASI ---
-        // DIREVISI: Urutan diubah menjadi Bus -> Ring -> Star -> Mesh -> Tree
         const TOPOLOGIES = {
             'Bus': {
                 name: 'Topologi Bus',
@@ -792,7 +791,7 @@
                 implementation: {
                     hardware: "Multi-port NIC/LAN Card, Kabel UTP melimpah, Switch skala enterprise dengan port berlimpah.",
                     steps: [
-                        "Hitung jumlah port dan kabel yang dibutuhkan melalui formula sirkuit: N(N-1)/2.",
+                        "Hitung jumlah port dan kabel yang dibutuhkan melalui formula sirkuit: $N(N-1)/2$.",
                         "Pasangkan beberapa kartu jaringan (NIC) pada masing-masing PC.",
                         "Tarik kabel point-to-point dedicated dari satu PC langsung ke semua PC tetangganya.",
                         "Lakukan konfigurasi routing dinamis pada setiap host agar pengiriman paket data cerdas mencari jalur cadangan."
@@ -957,7 +956,7 @@
                     "N - 1"
                 ],
                 answer: "N * (N - 1) / 2",
-                pembahasan: "Rumus penentuan link pada graf lengkap (Mesh) adalah N(N-1)/2. Contoh: 4 PC membutuhkan 4(3)/2 = 6 jalur kabel."
+                pembahasan: "Rumus penentuan link pada graf lengkap (Mesh) adalah $N(N-1)/2$. Contoh: 4 PC membutuhkan $4(3)/2 = 6$ jalur kabel."
             },
             {
                 q: "Topologi Tree (Pohon) merupakan gabungan dari topologi dasar apa saja?",
@@ -1389,7 +1388,7 @@
                 return { id, x: x + 18, y: y + 18, el: node };
             };
 
-            // Tata letak jaringan simetris (Urutan baru: Bus -> Ring -> Star -> Mesh -> Tree)
+            // Tata letak jaringan simetris (Urutan: Bus -> Ring -> Star -> Mesh -> Tree)
             if (topoName === 'Star') {
                 const centerNode = createNode(0, 'HUB', simWidth / 2 - 18, simHeight / 2 - 18, true, '#fcd34d');
                 centralNodes.push(centerNode);
@@ -1673,9 +1672,9 @@
             alertMessage("Sistem Reset!", "Seluruh permainan kuis telah dikosongkan.", 'primary');
         }
 
-        // --- SISTEM EVALUASI 20 SOAL (BARU) ---
+        // --- SISTEM EVALUASI 20 SOAL ---
         function startEvaluation() {
-            evalQuestions = [...EVAL_QUESTIONS]; // Ambil database 20 soal
+            evalQuestions = [...EVAL_QUESTIONS]; 
             currentEvalIndex = 0;
             evalScore = 0;
             evalAnswersLog = [];
@@ -1719,7 +1718,6 @@
         function submitEvalAnswer(selectedBtn, chosenOpt, correctAns, pembahasanText) {
             const isCorrect = chosenOpt === correctAns;
             
-            // Matikan semua tombol opsi
             document.querySelectorAll('.eval-option-btn').forEach(btn => {
                 btn.disabled = true;
                 if (btn.textContent === correctAns) {
@@ -1736,7 +1734,6 @@
                 showEvalFeedback(false, `Jawaban Anda Salah (Benar: ${correctAns}) 😔`, pembahasanText);
             }
 
-            // Simpan log data review
             evalAnswersLog.push({
                 question: evalQuestions[currentEvalIndex].q,
                 userChoice: chosenOpt,
@@ -1771,7 +1768,6 @@
 
             document.getElementById('eval-final-score').textContent = `${evalScore} / ${evalQuestions.length}`;
             
-            // Pesan analisis hasil
             const feedbackBox = document.getElementById('eval-result-feedback');
             let msg = '';
             if (evalScore === 20) {
@@ -1785,7 +1781,6 @@
             }
             feedbackBox.textContent = msg;
 
-            // Render daftar review pembahasan soal (BARU)
             const listContainer = document.getElementById('eval-review-list');
             listContainer.innerHTML = '';
 
@@ -2019,7 +2014,7 @@
             container.appendChild(line);
         }
 
-        // Fungsi pembantu mencari letak node berdasarkan ID (BARU)
+        // Fungsi pembantu mencari letak node berdasarkan ID
         function getNodePosition(nodeId, nodePositions) {
              const id = parseInt(nodeId);
              return nodePositions.find(n => n.id === id);
